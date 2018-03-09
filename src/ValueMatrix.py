@@ -6,18 +6,21 @@ from typing import List, DefaultDict, Dict
 from collections import defaultdict
 
 EMPTY_CELL: str = "?"
+CLASS_CELL: int = -1
 
 class ValueMatrix:
     def __init__(self):
         self.__struct: List[DefaultDict[str, DefaultDict[str, int]]] = list()
 
-    def init_struct(self, row):
+    def init_struct(self, row: List[str]):
         for i in range(len(row) - 1):
             self.__new_dict()
 
     def add_row(self, row: List[str]) -> None:
-        """"""
-        instance_class: str = row[-1]
+        """
+        Processes a row and adds its relevant data to the matrix.
+        """
+        instance_class: str = row[CLASS_CELL]
 
         # Skip the last column which is the class
         for i in range(len(row) - 1):
