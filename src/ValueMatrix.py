@@ -2,8 +2,6 @@
 Wrapper class for the value matrix
 """
 
-import csv
-
 from typing import List, DefaultDict, Dict
 from collections import defaultdict
 
