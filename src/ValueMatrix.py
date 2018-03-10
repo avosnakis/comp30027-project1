@@ -13,7 +13,7 @@ class ValueMatrix:
     def __init__(self):
         self.__struct: List[DefaultDict[str, DefaultDict[str, int]]] = list()
 
-    def init_struct(self, row: List[str]):
+    def init_struct(self, row: List[str]) -> None:
         for i in range(len(row) - 1):
             self.__new_dict()
 
@@ -45,5 +45,5 @@ class ValueMatrix:
             return
         self.__struct[curr_cell][instance_class][attr] += 1
 
-    def print_matrix(self):
+    def print_matrix(self) -> None:
         print(self.__struct)
