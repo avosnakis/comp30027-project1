@@ -4,7 +4,6 @@ Wrapper class for the value matrix
 
 from typing import List, DefaultDict, Dict
 from collections import defaultdict
-from random import random
 
 EMPTY_CELL: str = "?"
 CLASS_CELL: int = -1
@@ -26,9 +25,6 @@ class ValueMatrix:
         # Skip the last column which is the class
         for i in range(len(row) - 1):
             self.__incr_cell(instance_class, row[i], i)
-
-
-
 
     def __new_dict(self) -> None:
         """
