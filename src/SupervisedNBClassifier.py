@@ -55,16 +55,10 @@ class SupervisedNBClassifier:
         for i in range(len(self.__struct)):
             for instance_class in classes:
                 for key, val in self.__struct[i][instance_class].items():
-                    print("items: ", key, val)
                     self._set_prob(i, instance_class, key, val)
 
     def _set_prob(self, attr: int, instance_class: str, attr_key: str, attr_val: int) -> None:
         total_in_class = sum(self.__struct[attr][instance_class].values())
-        print("attr: ", attr)
-        print("class: ", instance_class)
-        print("attr_key: ", attr_key)
-        print("attr_val: ", attr_val)
-        print("total: ", total_in_class)
         self._probs[attr][instance_class][attr_key] = attr_val / total_in_class
 
     def _init_struct(self, row: List[str]) -> None:
