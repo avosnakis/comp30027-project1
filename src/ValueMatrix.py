@@ -28,11 +28,7 @@ class ValueMatrix:
             self.__incr_cell(instance_class, row[i], i)
 
 
-    def label_unsupervised(self, ):
-        """
-        Generic Method which labels the unsupervised data rows with a
-        non-uniformly distributed probability of each class 
-        """
+
 
     def __new_dict(self) -> None:
         """
