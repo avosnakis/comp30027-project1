@@ -71,4 +71,6 @@ class ClassifierData:
 
 def _get_num_instances(filename : str) -> int:
     with open(filename) as csvfile:
-        return sum(1 for row in csvfile)
+        num_instances = sum(1 for row in csvfile)
+    csvfile.close()
+    return num_instances
