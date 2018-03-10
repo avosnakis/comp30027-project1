@@ -52,13 +52,13 @@ class ClassifierData:
         """
         Returns a deep copy of the training data.
         """
-        return copy.deepcopy(self._testing_data)
+        return copy.deepcopy(self._training_data)
 
     def get_testing_data(self) -> List[List[str]]:
         """
         Returns a deep copy of the testing data.
         """
-        return copy.deepcopy(self._training_data)
+        return copy.deepcopy(self._testing_data)
 
     def print_data(self) -> None:
         print("Training data:")

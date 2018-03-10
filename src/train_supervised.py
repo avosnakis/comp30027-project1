@@ -1,9 +1,9 @@
 from typing import List
 
 from ClassifierData import ClassifierData
-from ValueMatrix import ValueMatrix
+from SupervisedNBClassifier import SupervisedNBClassifier
 
-def train_supervised(data: ClassifierData) -> ValueMatrix:
-    matrix: ValueMatrix = ValueMatrix()
+def train_supervised(data: ClassifierData) -> SupervisedNBClassifier:
+    matrix: SupervisedNBClassifier = SupervisedNBClassifier()
     matrix.train(data)
     return matrix
