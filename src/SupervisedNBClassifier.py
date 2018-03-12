@@ -2,7 +2,7 @@
 Wrapper class for the value matrix
 """
 
-from typing import List, DefaultDict, Dict, Callable
+from typing import List, DefaultDict, Dict, Callable, Tuple
 from collections import defaultdict
 from functools import reduce
 from pprint import pprint
@@ -32,13 +32,16 @@ class SupervisedNBClassifier:
         self._build_freq_struct(data.get_training_data())
         self._build_class_probs(data.get_classes())
 
+    def predict_set(self, instances: List[List[str]]) -> List[Tuple[str, List[str]]]:
+        return [(self.predict(instance), instance) for instance in instances]
+
     def evaluate(self, instances: List[List[str]]) -> float:
         """
         Returns the percentage of correct evaluations.
         """
-        correct_predictions = [self._correct_prediction(instance)
-                                           for instance in instances]
-        return 100 * (len(list(filter(lambda x: x, correct_predictions))) / len(correct_predictions))
+        predictions = self.predict_set(instances)
+        return 100 * (len(list(filter(lambda x: x[0] == x[1][CLASS_CELL]
+                                      , predictions))) / len(predictions))
 
     def _correct_prediction(self, instance: List[str]) -> bool:
         predicted_class: str = self.predict(instance)
