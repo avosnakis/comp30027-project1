@@ -20,7 +20,6 @@ class SupervisedNBClassifier:
         self._probs: List[DefaultDict[str, DefaultDict[str, float]]] = list()
         self._class_probs: Dict[str, float] = dict()
         self._class_instances: DefaultDict[str, int] = defaultdict(int)
-        self._val_instances: List[DefaultDict[str, int]] = list()
         self._num_instances: int = 0
         self._laplace: bool = laplace
 
@@ -40,8 +39,8 @@ class SupervisedNBClassifier:
         Returns the percentage of correct evaluations.
         """
         predictions = self.predict_set(instances)
-        return 100 * (len(list(filter(lambda x: x[0] == x[1][CLASS_CELL]
-                                      , predictions))) / len(predictions))
+        return 100 * (len(list(filter(lambda x: x[0] == x[1][CLASS_CELL],
+                                      predictions))) / len(predictions))
 
     def _correct_prediction(self, instance: List[str]) -> bool:
         predicted_class: str = self.predict(instance)
@@ -130,7 +129,6 @@ class SupervisedNBClassifier:
         Creates a new defaultdict of defaultdicts of ints for this attribute.
         """
         self.__struct.append(defaultdict(lambda: defaultdict(self.__default_count())))
-        self._val_instances.append(defaultdict(self.__default_count()))
         self._probs.append(defaultdict(lambda: defaultdict(self.__default_prob())))
 
     def __default_count(self) -> Callable[[], int]:
@@ -142,7 +140,6 @@ class SupervisedNBClassifier:
     def __incr_cell(self, instance_class: str, attr: str, curr_cell: int) -> None:
         if attr == EMPTY_CELL:
             return
-        self._val_instances[curr_cell][attr] += 1
         self.__struct[curr_cell][instance_class][attr] += 1
 
     def print_matrix(self) -> None:

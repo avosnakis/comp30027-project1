@@ -6,6 +6,7 @@ from typing import List
 TRAINING_FRACTION: float = .8
 CLASS_CELL: int = -1
 
+
 class ClassifierData:
     """
     Wrapper class that stores the training data, testing data, and all classes
