@@ -13,6 +13,7 @@ EMPTY_CELL: str = "?"
 CLASS_CELL: int = -1
 EPSILON: float = 10e-7
 
+
 class SupervisedNBClassifier:
     def __init__(self, laplace=True):
         self.__struct: List[DefaultDict[str, DefaultDict[str, int]]] = list()
@@ -39,11 +40,11 @@ class SupervisedNBClassifier:
         # for the sake of making a prediction
         n_attributes: int = len(self.__struct)
         if len(instance) == n_attributes:
-            instance = instance[:-1]
+            instance = instance[:CLASS_CELL]
 
         classes: List[str] = list(self._class_probs.keys())
         probs: List[float] = [self._prob_of(i_class, instance) for i_class in classes]
-        max_index = probs.index(max(probs))
+        max_index: int = probs.index(max(probs))
         return classes[max_index]
 
     def _prob_of(self, instance_class: str, instance: List[str]) -> float:
@@ -51,7 +52,8 @@ class SupervisedNBClassifier:
         Determines the probability that an instance is an instance of a specified class.
         """
         class_prob: float = self._class_probs[instance_class]
-        prob: float = reduce(lambda x, y: x * self._probs[instance_class][y], instance, 1)
+        prob: float = reduce(lambda x, y: x * y[0][instance_class][y[1]],
+                             zip(self._probs, instance), 1)
         return class_prob * prob
 
     def _build_freq_struct(self, data: List[List[str]]) -> None:
