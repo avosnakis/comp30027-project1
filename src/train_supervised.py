@@ -1,7 +1,6 @@
-from typing import List
-
 from ClassifierData import ClassifierData
 from SupervisedNBClassifier import SupervisedNBClassifier
+
 
 def train_supervised(data: ClassifierData) -> SupervisedNBClassifier:
     matrix: SupervisedNBClassifier = SupervisedNBClassifier()
