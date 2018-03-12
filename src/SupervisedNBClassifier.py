@@ -2,7 +2,7 @@
 Wrapper class for the value matrix
 """
 
-from typing import List, DefaultDict, Dict
+from typing import List, DefaultDict, Dict, Callable
 from collections import defaultdict
 from functools import reduce
 from pprint import pprint
@@ -11,19 +11,48 @@ from ClassifierData import ClassifierData
 
 EMPTY_CELL: str = "?"
 CLASS_CELL: int = -1
+EPSILON: float = 10e-7
 
 class SupervisedNBClassifier:
-    def __init__(self):
+    def __init__(self, laplace=True):
         self.__struct: List[DefaultDict[str, DefaultDict[str, int]]] = list()
         self._probs: List[DefaultDict[str, DefaultDict[str, float]]] = list()
         self._class_probs: Dict[str, float] = dict()
         self._class_instances: DefaultDict[str, int] = defaultdict(int)
         self._val_instances: List[DefaultDict[str, int]] = list()
-        self._num_instances = 0
+        self._num_instances: int = 0
+        self._laplace: bool = laplace
 
     def train(self, data: ClassifierData) -> None:
+        """
+        Trains the classifier, building the frequency table and the class probability
+        dictionary.
+        """
         self._build_freq_struct(data.get_training_data())
         self._build_class_probs(data.get_classes())
+
+    def predict(self, instance: List[str]) -> str:
+        """
+        Predicts the class for an instance.
+        """
+        # if the instance has the class still there, slice it off 
+        # for the sake of making a prediction
+        n_attributes: int = len(self.__struct)
+        if len(instance) == n_attributes:
+            instance = instance[:-1]
+
+        classes: List[str] = list(self._class_probs.keys())
+        probs: List[float] = [self._prob_of(i_class, instance) for i_class in classes]
+        max_index = probs.index(max(probs))
+        return classes[max_index]
+
+    def _prob_of(self, instance_class: str, instance: List[str]) -> float:
+        """
+        Determines the probability that an instance is an instance of a specified class.
+        """
+        class_prob: float = self._class_probs[instance_class]
+        prob: float = reduce(lambda x, y: x * self._probs[instance_class][y], instance, 1)
+        return class_prob * prob
 
     def _build_freq_struct(self, data: List[List[str]]) -> None:
         """
@@ -83,9 +112,15 @@ class SupervisedNBClassifier:
         """
         Creates a new defaultdict of defaultdicts of ints for this attribute.
         """
-        self.__struct.append(defaultdict(lambda: defaultdict(int)))
-        self._val_instances.append(defaultdict(int))
-        self._probs.append(defaultdict(lambda: defaultdict(float)))
+        self.__struct.append(defaultdict(lambda: defaultdict(self.__default_count())))
+        self._val_instances.append(defaultdict(self.__default_count()))
+        self._probs.append(defaultdict(lambda: defaultdict(self.__default_prob())))
+
+    def __default_count(self) -> Callable[[], int]:
+        return lambda: 1 if self._laplace else lambda: 0
+
+    def __default_prob(self) -> Callable[[], float]:
+        return lambda: 0 if self._laplace else lambda: EPSILON
 
     def __incr_cell(self, instance_class: str, attr: str, curr_cell: int) -> None:
         if attr == EMPTY_CELL:
