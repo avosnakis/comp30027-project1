@@ -3,7 +3,6 @@ import copy
 
 from typing import List
 
-TRAINING_FRACTION: float = .8
 CLASS_CELL: int = -1
 
 
@@ -12,7 +11,7 @@ class ClassifierData:
     Wrapper class that stores the training data, testing data, and all classes
     in the dataset, along with an API to access this data.
     """
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, training_fraction: float=.8):
         """
         Processes the input CSV into training and testing data, and records all
         classes.
@@ -22,7 +21,7 @@ class ClassifierData:
         self._classes: List[str] = list()
 
         num_instances = _get_num_instances(filename)
-        num_training_instances: int = round(TRAINING_FRACTION * num_instances)
+        num_training_instances: int = round(training_fraction * num_instances)
 
         with open(filename) as csvfile:
             i: int = 0
