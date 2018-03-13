@@ -32,19 +32,20 @@ class SupervisedNBClassifier:
         self._build_class_probs(data.get_classes())
 
     def predict_set(self, instances: List[List[str]]) -> List[Tuple[str, List[str]]]:
+        """
+        :param instances: A set of instances to classify.
+        :return: A set of instances along with their classification.
+        """
         return [(self.predict(instance), instance) for instance in instances]
 
     def evaluate(self, instances: List[List[str]]) -> float:
         """
-        Returns the percentage of correct evaluations.
+        :param instances: The instances to evaluate this classifier against.
+        :return: the percentage of correct evaluations
         """
         predictions = self.predict_set(instances)
-        return 100 * (len(list(filter(lambda x: x[0] == x[1][CLASS_CELL],
+        return 100 * (len(list(filter(lambda x: _correct_prediction(x),
                                       predictions))) / len(predictions))
-
-    def _correct_prediction(self, instance: List[str]) -> bool:
-        predicted_class: str = self.predict(instance)
-        return predicted_class == instance[CLASS_CELL]
 
     def predict(self, instance: List[str]) -> str:
         """
@@ -52,8 +53,8 @@ class SupervisedNBClassifier:
         """
         # if the instance has the class still there, slice it off 
         # for the sake of making a prediction
-        n_attributes: int = len(self.__struct)
-        if len(instance) == n_attributes:
+        n_columns: int = len(self.__struct)
+        if len(instance) == n_columns:
             instance = instance[:CLASS_CELL]
 
         classes: List[str] = list(self._class_probs.keys())
@@ -87,22 +88,33 @@ class SupervisedNBClassifier:
         Builds the class probabilities dictionary.
         """
         for instance_class in classes:
-            self._class_probs[instance_class] = self._find_class_prob(instance_class)
+            self._set_class_prob(instance_class)
         self._build_probs(classes)
 
-    def _find_class_prob(self, instance_class: str) -> float:
+    def _set_class_prob(self, instance_class: str) -> None:
         """
         Determines the probability of a single class appearing over the entire dataset.
         """
-        return self._class_instances[instance_class] / self._num_instances
+        prob: float = self._class_instances[instance_class] / self._num_instances
+        self._class_probs[instance_class] = prob
 
     def _build_probs(self, classes: List[str]) -> None:
+        """
+        Determines every posterior probability.
+        :param classes: Every possible class for this dataset.
+        """
         for i in range(len(self.__struct)):
             for instance_class in classes:
                 for key, val in self.__struct[i][instance_class].items():
                     self._set_prob(i, instance_class, key, val)
 
     def _set_prob(self, attr: int, instance_class: str, attr_key: str, attr_val: int) -> None:
+        """
+        :param attr: The index of the attribute which will have its probability set.
+        :param instance_class: The class to have its probability set.
+        :param attr_key: The key of the attribute having its probability set.
+        :param attr_val: The number of instances of this attribute given the conditions.
+        """
         total_in_class = sum(self.__struct[attr][instance_class].values())
         self._probs[attr][instance_class][attr_key] = attr_val / total_in_class
 
@@ -126,18 +138,34 @@ class SupervisedNBClassifier:
 
     def __new_dict(self) -> None:
         """
-        Creates a new defaultdict of defaultdicts of ints for this attribute.
+        Creates new defaultdicts of defaultdicts of ints OR floats for this attribute in the
+        appropriate data structures.
         """
         self.__struct.append(defaultdict(lambda: defaultdict(self.__default_count())))
         self._probs.append(defaultdict(lambda: defaultdict(self.__default_prob())))
 
     def __default_count(self) -> Callable[[], int]:
+        """
+        :return: The appropriate lambda function depending on whether the classifier is using
+        Laplace probabilistic smoothing or epsilon smoothing.
+        """
         return lambda: 1 if self._laplace else lambda: 0
 
     def __default_prob(self) -> Callable[[], float]:
+        """
+        :return: The appropriate lambda function depending on whether the classifier is using
+        Laplace probabilistic smoothing or epsilon smoothing.
+        """
         return lambda: 0 if self._laplace else lambda: EPSILON
 
     def __incr_cell(self, instance_class: str, attr: str, curr_cell: int) -> None:
+        """
+        Increments the value of an attribute given its conditions.
+        :param instance_class: The class for having its value incremented.
+        :param attr: The attribute value having its value incremented.
+        :param curr_cell: The attribute having its value incremented.
+        """
+        # Don't increment anything if it's an empty cell
         if attr == EMPTY_CELL:
             return
         self.__struct[curr_cell][instance_class][attr] += 1
@@ -152,3 +180,12 @@ class SupervisedNBClassifier:
         print("_probs: ")
         for item in self._probs:
             pprint(item)
+
+
+def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:
+    """
+    :param instance: The instance to check whether the prediction was correct. The first cell
+    in the tuple is the predicted class, the second cell contains the instance itself.
+    :return: Whether the prediction was correct.
+    """
+    return instance[0] == instance[1][CLASS_CELL]
