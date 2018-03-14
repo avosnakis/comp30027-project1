@@ -67,9 +67,23 @@ class SupervisedNBClassifier:
         Determines the probability that an instance is an instance of a specified class.
         """
         class_prob: float = self._class_probs[instance_class]
-        prob: float = reduce(lambda x, y: x * y[0][instance_class][y[1]],
+        prob: float = reduce(lambda x, y: x * self._prob_or_default(*y, instance_class),
                              zip(self._probs, instance), 1)
         return class_prob * prob
+
+    def _prob_or_default(self, 
+                         attr_prob: DefaultDict[str, DefaultDict[str, float]],
+                         attr_val: str,
+                         instance_class: str) -> float:
+        """
+        Determines the probability of a value given a class and column.
+        If the value is empty, then returns the highest value given those conditions.
+        """
+        # Value imputation: return the highest prob for this condition
+        if attr_val == EMPTY_CELL:
+            return max(attr_prob[instance_class].values())
+        else:
+            return attr_prob[instance_class][attr_val]
 
     def _build_freq_struct(self, data: List[List[str]]) -> None:
         """

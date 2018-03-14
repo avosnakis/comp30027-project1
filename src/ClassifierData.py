@@ -1,5 +1,6 @@
 import csv
 import copy
+import random
 
 from typing import List
 
@@ -24,17 +25,20 @@ class ClassifierData:
         num_training_instances: int = round(training_fraction * num_instances)
 
         with open(filename) as csvfile:
-            i: int = 0
-            for row in csv.reader(csvfile):
-                if row[CLASS_CELL] not in self._classes:
-                    self._classes.append(row[CLASS_CELL])
-
-                if i < num_training_instances:
-                    self._training_data.append(row)
-                else:
-                    self._testing_data.append(row)
-                i += 1
+            rows: List[List[str]] = list(list(row) for row in csv.reader(csvfile, delimiter=','))
         csvfile.close()
+        random.shuffle(rows)
+
+        i: int = 0
+        for row in rows:
+            if row[CLASS_CELL] not in self._classes:
+                self._classes.append(row[CLASS_CELL])
+
+            if i < num_training_instances:
+                self._training_data.append(row)
+            else:
+                self._testing_data.append(row)
+            i += 1
 
     def get_num_classes(self) -> int:
         """
