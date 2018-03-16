@@ -1,17 +1,18 @@
 import csv
 import copy
+import random
 
 from typing import List
 
-TRAINING_FRACTION: float = .8
 CLASS_CELL: int = -1
+
 
 class ClassifierData:
     """
     Wrapper class that stores the training data, testing data, and all classes
     in the dataset, along with an API to access this data.
     """
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, training_fraction: float=.8):
         """
         Processes the input CSV into training and testing data, and records all
         classes.
@@ -21,20 +22,23 @@ class ClassifierData:
         self._classes: List[str] = list()
 
         num_instances = _get_num_instances(filename)
-        num_training_instances: int = round(TRAINING_FRACTION * num_instances)
+        num_training_instances: int = round(training_fraction * num_instances)
 
         with open(filename) as csvfile:
-            i: int = 0
-            for row in csv.reader(csvfile):
-                if row[CLASS_CELL] not in self._classes:
-                    self._classes.append(row[CLASS_CELL])
-
-                if i < num_training_instances:
-                    self._training_data.append(row)
-                else:
-                    self._testing_data.append(row)
-                i += 1
+            rows: List[List[str]] = list(list(row) for row in csv.reader(csvfile, delimiter=','))
         csvfile.close()
+        random.shuffle(rows)
+
+        i: int = 0
+        for row in rows:
+            if row[CLASS_CELL] not in self._classes:
+                self._classes.append(row[CLASS_CELL])
+
+            if i < num_training_instances:
+                self._training_data.append(row)
+            else:
+                self._testing_data.append(row)
+            i += 1
 
     def get_num_classes(self) -> int:
         """
@@ -52,13 +56,13 @@ class ClassifierData:
         """
         Returns a deep copy of the training data.
         """
-        return copy.deepcopy(self._testing_data)
+        return copy.deepcopy(self._training_data)
 
     def get_testing_data(self) -> List[List[str]]:
         """
         Returns a deep copy of the testing data.
         """
-        return copy.deepcopy(self._training_data)
+        return copy.deepcopy(self._testing_data)
 
     def print_data(self) -> None:
         print("Training data:")
