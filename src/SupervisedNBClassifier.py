@@ -43,7 +43,7 @@ class SupervisedNBClassifier:
         :param instances: The instances to evaluate this classifier against.
         :return: the percentage of correct evaluations
         """
-        predictions = self.predict_set(instances)
+        predictions: List[Tuple[str, List[str]]] = self.predict_set(instances)
         return 100 * (len(list(filter(lambda x: _correct_prediction(x),
                                       predictions))) / len(predictions))
 
