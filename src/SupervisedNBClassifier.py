@@ -129,7 +129,7 @@ class SupervisedNBClassifier:
         :param attr_key: The key of the attribute having its probability set.
         :param attr_val: The number of instances of this attribute given the conditions.
         """
-        total_in_class = sum(self.__struct[attr][instance_class].values())
+        total_in_class: int = sum(self.__struct[attr][instance_class].values())
         self._probs[attr][instance_class][attr_key] = attr_val / total_in_class
 
     def _init_struct(self, row: List[str]) -> None:
