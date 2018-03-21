@@ -30,12 +30,12 @@ def predict_supervised(classifier: SupervisedNBClassifier, data: List[List[str]]
         print("Predicted class: {}, instance: {}".format(pred[0], pred[1]))
 
 
-def evaluate_supervised(classifier: SupervisedNBClassifier, data: ClassifierData) -> None:
+def evaluate_supervised(classifier: SupervisedNBClassifier, data: List[List[str]]) -> None:
     """
     Evaluates a classifier against a set of data, printing out the percentage of correct
     classifications.
     :param classifier: The trained classifier.
     :param data: The data holing the testing data.
     """
-    percentage_correct: float = classifier.evaluate(data.get_testing_data())
+    percentage_correct: float = classifier.evaluate(data)
     print("Percentage of correct classifications: {:.6}%".format(percentage_correct))
