@@ -13,6 +13,7 @@ from ClassifierData import ClassifierData
 EMPTY_CELL: str = "?"
 CLASS_CELL: int = -1
 EPSILON: float = 10e-7
+MAX_ITERATE: int = 10
 
 
 class UnsupervisedNBClassifier:
@@ -24,6 +25,7 @@ class UnsupervisedNBClassifier:
         self._num_instances: int = 0
         self._laplace: bool = laplace
         self._num_class: int = 0
+        self._class_prob_matrix: List[List[float]] 
 
     def train(self, data: ClassifierData) -> None:
         """
@@ -34,7 +36,7 @@ class UnsupervisedNBClassifier:
         self._build_freq_struct(data.get_training_data())
         self._build_class_probs(data.get_classes())
 
-    """
+    
     def predict_set(self, instances: List[List[str]]) -> List[Tuple[str, List[str]]]:
         """
         :param instances: A set of instances to classify.
@@ -88,38 +90,45 @@ class UnsupervisedNBClassifier:
             return max(attr_prob[instance_class].values())
         else:
             return attr_prob[instance_class][attr_val]
-    """
+    
     
     #FINALISED
     def _build_freq_struct(self, data: List[List[str]]) -> None:
         """
         Populates and builds the frequency struct.
         """
+
         first_run: bool = True
         self._num_instances = len(data)
+
+        #Generate the list of the probabilities given the number of classes
+        self._class_prob_matrix = self.class_prob_matrix(len(data), data.get_num_classes)
+
+        #Variable to keep track of the instance number
+        i: int = 0
+
         for instance in data:
             if first_run:
                 self._init_struct(instance)
                 first_run = False
-            self._add_row(instance)
+            self._add_row(instance, i)
+            i+=1
 
 
-    #Skeleton useful
-    def _build_class_probs(self, classes: List[str], data: ) -> None:
+    #FINALISED
+    def _build_class_probs(self, classes: List[str]) -> None:
         """
         Builds the class probabilities dictionary.
         """
         #Iterating through each row to count the probability of each class
         for instance_class in classes:
-            #EDIT THIS
-            #Need to count the number of instances 
-
+            # Works the same way as supervised but with fractional counts
             self._set_class_prob(instance_class)
         self._build_probs(classes)
 
 
 
-
+    #NEEDS REVISION
     def _set_class_prob(self, instance_class: str) -> None:
         """
         Determines the probability of a single class appearing over the entire dataset.
@@ -152,6 +161,7 @@ class UnsupervisedNBClassifier:
         :param attr_key: The key of the attribute having its probability set.
         :param attr_val: The number of instances of this attribute given the conditions.
         """
+        #Should stay the same by right
         total_in_class = sum(self.__struct[attr][instance_class].values())
         self._probs[attr][instance_class][attr_key] = attr_val / total_in_class
 
@@ -167,18 +177,16 @@ class UnsupervisedNBClassifier:
 
     #FINALISED
     #Changed to add the probability of the class instead of counting 
-    def _add_row(self, row: List[str], ) -> None:
+    def _add_row(self, row: List[str], instance_num: int) -> None:
         """
         Processes a row and adds its relevant data to the matrix.
         """
-        #Generate the list of the probabilities given the number of classes
-        ls: List[float] = self.generate_class_prob()
+        
 
         # Skip the last column which is the class
         for i in range(len(row) - 1): 
-            # For each attribute, there are possibilities for each class
-            for j in range(self._num_class):
-                self.__incr_cell(instance_class, row[i], i, ls, j)
+            
+            self.__incr_cell(row[CLASS_CELL], row[i], i, instance_num)
 
     def __new_dict(self) -> None:
         """
@@ -202,7 +210,9 @@ class UnsupervisedNBClassifier:
         """
         return lambda: 0 if self._laplace else lambda: EPSILON
 
-    def __incr_cell(self, instance_class: str, attr: str, curr_cell: int, ls: List[float], class_num: int) -> None:
+
+    #FINALISED
+    def __incr_cell(self, instance_class: str, attr: str, curr_cell: int, instance_num: int) -> None:
         """
         Increments the value of an attribute given its conditions.
         :param instance_class: The class for having its value incremented.
@@ -212,7 +222,7 @@ class UnsupervisedNBClassifier:
         # Don't increment anything if it's an empty cell
         if attr == EMPTY_CELL:
             return
-        self.__struct[curr_cell][instance_class][attr] += ls[class_num]
+        self.__struct[curr_cell][instance_class][attr] += self._class_prob_matrix[instance_num][instance_class]
 
     def print_matrix(self) -> None:
         print("__struct: ")
@@ -232,6 +242,19 @@ class UnsupervisedNBClassifier:
         """
         ls: List[float] = random.dirichlet(np.ones(self._num_class), size = 1)
         return ls
+
+    #FINALISED
+    def class_prob_matrix(num_instances: int, num_class: int) -> List[List[float]]:
+        """
+        Generate the list of lists of random distribution for each matching instance 
+        """
+        prob_matrix = []
+        for i in range(num_instances):
+            # Generate a list of random distribution per instance on the data table
+            prob_matrix.append(generate_class_prob(num_class))
+
+        return prob_matrix
+
 
 def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:
     """
