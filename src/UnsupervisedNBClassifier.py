@@ -18,6 +18,17 @@ MAX_ITERATE: int = 10
 
 class UnsupervisedNBClassifier:
     def __init__(self, laplace=True):
+        """
+        __struct: Container for the Classifier
+        _probs: Probability of each attribute given each class
+        _class_probs: Probability per iteration for each class happening
+        _class_instances: 
+        _num_instances: Number of instances in the raw data table
+        _laplace: Boolean variable to indicate if laplace is used
+        _num_class: Number of classes
+        _class_prob_matrix: randomly (non-uniform) class probabilities per instance in raw data table
+        _norm_class_distributions: Matrix of each normalised class distributions per instance for each iteration
+        """
         self.__struct: List[DefaultDict[str, DefaultDict[str, int]]] = list()
         self._probs: List[DefaultDict[str, DefaultDict[str, float]]] = list()
         self._class_probs: Dict[str, float] = dict()
@@ -25,7 +36,8 @@ class UnsupervisedNBClassifier:
         self._num_instances: int = 0
         self._laplace: bool = laplace
         self._num_class: int = 0
-        self._class_prob_matrix: List[List[float]] 
+        self._class_prob_matrix: List[List[float]] = list()
+        self._norm_class_distributions: List[List[List[float]]] = list()
 
     def train(self, data: ClassifierData) -> None:
         """
@@ -36,7 +48,7 @@ class UnsupervisedNBClassifier:
         self._build_freq_struct(data.get_training_data())
         self._build_class_probs(data.get_classes())
 
-    
+    # FINALISED
     def predict_set(self, instances: List[List[str]]) -> List[Tuple[str, List[str]]]:
         """
         :param instances: A set of instances to classify.
@@ -52,6 +64,7 @@ class UnsupervisedNBClassifier:
         predictions = self.predict_set(instances)
         return 100 * (len(list(filter(lambda x: _correct_prediction(x),
                                       predictions))) / len(predictions))
+
 
     def predict(self, instance: List[str]) -> str:
         """
@@ -134,16 +147,11 @@ class UnsupervisedNBClassifier:
         Determines the probability of a single class appearing over the entire dataset.
         """
 
-        for i in range(len(self.__struct)):
-            for instance_class in classes:
-                for key, val in self.__struct[i][instance_class].items():
-                    self._set_prob(i, instance_class, key, val)
-
-        """
         prob: float = self._class_instances[instance_class] / self._num_instances
         self._class_probs[instance_class] = prob
-        """
+        
 
+    #FINALISED
     def _build_probs(self, classes: List[str]) -> None:
         """
         Determines every posterior probability.
@@ -181,8 +189,6 @@ class UnsupervisedNBClassifier:
         """
         Processes a row and adds its relevant data to the matrix.
         """
-        
-
         # Skip the last column which is the class
         for i in range(len(row) - 1): 
             
@@ -254,6 +260,14 @@ class UnsupervisedNBClassifier:
             prob_matrix.append(generate_class_prob(num_class))
 
         return prob_matrix
+
+    #FINALISED
+    def normalise(ls: List[float]) -> List[float]:
+        """
+        Normalise the probabilities for the predictor so they sum to 1.
+        :param ls: The list of unnormalised probabilities for each iteration.
+        """
+        return [float(i)/sum(ls) for i in ls]
 
 
 def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:

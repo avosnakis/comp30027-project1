@@ -38,9 +38,29 @@ print(class_prob_matrix(5, 2))
 
 ###############################################################################
 
-def predict_iterate():
+def predict_iterate(self, data: ClassifierData):
+	# Each iteration
 	for iteration in range(MAX_ITERATE):
+		distro_list = []
+		self.
 
+
+
+###############################################################################
+# 
+
+
+
+
+
+# Iterate a number of times to train the data set and get different sets of class distributions
+def predict_iterate2(raw_data: List[List[str]], class_distribution: List[List[float]]):
+	distro_list = []
+	for iteration in range(MAX_ITERATE):
+		#train data and receive the class_distros for each iteration
+		train(raw_data)
+		distro_list.append(normalise(class_distribution))
+	return distro_list
 
 # Normalising the probabilities
 def normalise(ls: List[float]) -> List[float]:
