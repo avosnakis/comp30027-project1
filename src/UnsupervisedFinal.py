@@ -18,7 +18,7 @@ from numpy import random
 EMPTY_CELL: str = "?"
 CLASS_CELL: int = -1
 EPSILON: float = 10e-7
-MAX_ITERATE: int = 10
+MAX_ITERATE: int = 20
 FRACTION: float = 0.8
 LAPLACE: bool = True
 
@@ -38,13 +38,15 @@ Definitions of Terms:
     classes_list - List containing all the types of classes
     class_prob_matrix - randomly (non-uniform) class probabilities per instance in raw data table (raw data stage)
     total_class_probs - total sum of fractional counts of all classes in the classifier
-
     
+    posterior_matrix - (NEVER USED) the resulting posterior matrix for all posterior values
+    posterior_classifier - classifier struct but for posteriour probabilities only
+    posterior_class_prob - probability of a class over the whole data_table (all instances)
 
     norm_class_distributions -  Matrix of each normalised class distributions per instance for each iteration (prediction)
 """
 # Raw Data
-file: str = '../2018S1-proj1_data/car.csv'
+file: str = '../2018S1-proj1_data/breast-cancer.csv'
 data_table: List[List[str]] = list()
 test_data: List[List[str]] = list()
 classifier: List[DefaultDict[str, DefaultDict[str, int]]] = list()
@@ -383,6 +385,7 @@ def normalise(ls: List[float]) -> List[float]:
     :param ls: List of floats pertaining to each instance of the posterior classes
     :returnd: List of the probability floats normalised to add to 1
     """
+
     return [float(i)/sum(ls) for i in ls]
 
 
@@ -453,17 +456,32 @@ def prob_or_default(attr_prob: DefaultDict[str, DefaultDict[str, float]], attr_v
         return attr_prob[curr_class][attr_val]
 
 
+# Prediction Iterations
+# UNFINISHED
+def iterate_predictions() -> List[Tuple[str, List[str]]]:
+    predictions: List[Tuple[str, List[str]]] = list()
+
+    for i in range(MAX_ITERATE):
+        
+        temp_pd = predict_set(test_data)
+        for pd in temp_pd:
+            predictions.append(pd)
+
+    return predictions 
 
 
 #===================================================================================
 # Evaluation
 
+
+# Evaluation for Supervised for testing -----------------------
 def evaluate(instances: List[List[str]]) -> float:
     """
     :param instances: The instances to evaluate this classifier against.
     :return: the percentage of correct evaluations
     """
-    predictions = predict_set(instances)
+    #predictions = predict_set(instances)
+    predictions = iterate_predictions()
     return 100 * (len(list(filter(lambda x: _correct_prediction(x),
                                   predictions))) / len(predictions))
 
@@ -474,10 +492,36 @@ def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:
     :return: Whether the prediction was correct.
     """
     return instance[0] == instance[1][CLASS_CELL]
+# -------------------------------------------------------------
 
+# Iterate Evaluation
+def iterate_evaluate(test_data: List[List[str]]) -> float:
+    scores = []
+    for i in range(MAX_ITERATE):
+        scores.append(evaluate(test_data))
+    return sum(scores)/len(scores)
 
 #===================================================================================
 # Debug/ Print Calls
+
+
+# Deterministic 
+def deterministic() -> List[str]:
+    """
+    Deterministically generate a concrete class randomly 
+    for the unsupervised classifier (data_table)
+    :return: A list of random classes matching each instance
+    """
+    d_list: List[str] = list()
+
+    # Make sure it matches the number of training instances to be in classifier
+    for i in range(num_training_instances):
+        # Generate a random index and append respective string value into list
+        gen_index: int = random.randint(0, (len(classes_list)-1))
+        d_list.append(classes_list[gen_index])
+
+    return d_list
+
 
 # Pre-processed table
 #print(test_data)
@@ -496,4 +540,4 @@ def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:
 #print(predict_set(test_data))
 
 # Evaluating
-print(evaluate(test_data))
+print(iterate_evaluate(test_data))
