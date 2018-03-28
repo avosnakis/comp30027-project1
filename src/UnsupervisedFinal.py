@@ -65,8 +65,6 @@ posterior_classifier: List[DefaultDict[str, DefaultDict[str, int]]] = list()
 posterior_class_prob: Dict[str, float] = dict()
 
 
-# Iterative stage
-norm_class_distributions: List[List[List[float]]] = list()
 
 #===================================================================================
 # File Reading
@@ -386,7 +384,7 @@ def normalise(ls: List[float]) -> List[float]:
     :returnd: List of the probability floats normalised to add to 1
     """
 
-    return [float(i)/sum(ls) for i in ls]
+    return [(float(i) + EPSILON)/ sum(ls) for i in ls]
 
 
 # FINALISED
@@ -462,7 +460,7 @@ def iterate_predictions() -> List[Tuple[str, List[str]]]:
     predictions: List[Tuple[str, List[str]]] = list()
 
     for i in range(MAX_ITERATE):
-        
+        train()
         temp_pd = predict_set(test_data)
         for pd in temp_pd:
             predictions.append(pd)
@@ -502,7 +500,7 @@ def iterate_evaluate(test_data: List[List[str]]) -> float:
     return sum(scores)/len(scores)
 
 #===================================================================================
-# Debug/ Print Calls
+# Debug/ Print Calls/ Misc Function
 
 
 # Deterministic 
@@ -523,6 +521,11 @@ def deterministic() -> List[str]:
     return d_list
 
 
+# Difference from 1
+def append_to_one(diff: float) -> None:
+    to_one_ls.append(diff)
+    return None
+
 # Pre-processed table
 #print(test_data)
 
@@ -540,4 +543,7 @@ def deterministic() -> List[str]:
 #print(predict_set(test_data))
 
 # Evaluating
-print(iterate_evaluate(test_data))
+#print(evaluate(iterate_predictions()))
+#print(iterate_evaluate(test_data))
+
+print(normalise([0.15+EPSILON, 0.15+EPSILON,0.3+EPSILON]))
