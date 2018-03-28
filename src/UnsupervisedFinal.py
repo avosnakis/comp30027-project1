@@ -44,20 +44,17 @@ Definitions of Terms:
     norm_class_distributions -  Matrix of each normalised class distributions per instance for each iteration (prediction)
 """
 # Raw Data
-file: str = '../2018S1-proj1_data/breast-cancer.csv'
+file: str = '../2018S1-proj1_data/mushroom.csv'
 data_table: List[List[str]] = list()
 test_data: List[List[str]] = list()
-classifier:
-    List[DefaultDict[str, DefaultDict[str, int]]] = list()
+classifier: List[DefaultDict[str, DefaultDict[str, int]]] = list()
 
 # Classifier Data
 num_instances: int
 num_training_instances: int
 num_class: int
-classes_list:
-    List[str] = list()
-class_prob_matrix:
-    List[List[float]] = list()
+classes_list: List[str] = list()
+class_prob_matrix: List[List[float]] = list()
 total_class_probs: DefaultDict[str, float] = defaultdict(float)
 
 # Posteriors
@@ -424,8 +421,7 @@ def predict(instance: List[str]) -> str:
         instance = instance[:CLASS_CELL]
 
     # Obtaining a list of classes
-    classes:
-        List[str] = list(posterior_class_prob.keys())
+    classes: List[str] = list(posterior_class_prob.keys())
     # Find list of probabilities that this instance could be
     probs: List[float] = [prob_of_class(curr_class, instance) for curr_class in classes]
 
@@ -445,8 +441,7 @@ def prob_of_class(curr_class: str, instance: List[str]) -> float:
     :param instance: Instance of the test_data (a row)
     """
     # Finding the probably of the class over all instances over the training data
-    class_prob:
-        float = posterior_class_prob[curr_class]
+    class_prob: float = posterior_class_prob[curr_class]
 
     # Applying formula to find the probability for each using reducing/folding
     prob: float = reduce(lambda x, y: x * prob_or_default(*y, curr_class),
@@ -558,8 +553,12 @@ def append_to_one(diff: float) -> None:
 
 
 # Predicting ---------------------------------
-print(predict_set(test_data))
+#print(predict_set(test_data))
 
 # Evaluating ---------------------------------
+
+# Single case
+# print(evaluate(test_data))
+# Iterative case
 print(evaluate(iterate_predictions()))
-# print(iterate_evaluate(test_data))
+
