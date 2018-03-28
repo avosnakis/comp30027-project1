@@ -13,8 +13,6 @@ from functools import reduce
 from pprint import pprint
 from numpy import random
 
-
-
 EMPTY_CELL: str = "?"
 CLASS_CELL: int = -1
 EPSILON: float = 10e-7
@@ -49,21 +47,23 @@ Definitions of Terms:
 file: str = '../2018S1-proj1_data/breast-cancer.csv'
 data_table: List[List[str]] = list()
 test_data: List[List[str]] = list()
-classifier: List[DefaultDict[str, DefaultDict[str, int]]] = list()
+classifier:
+    List[DefaultDict[str, DefaultDict[str, int]]] = list()
 
 # Classifier Data
-num_instances: int 
-num_training_instances: int 
-num_class: int 
-classes_list: List[str] = list()
-class_prob_matrix: List[List[float]] = list()
+num_instances: int
+num_training_instances: int
+num_class: int
+classes_list:
+    List[str] = list()
+class_prob_matrix:
+    List[List[float]] = list()
 total_class_probs: DefaultDict[str, float] = defaultdict(float)
 
 # Posteriors
 posterior_matrix: List[List[float]] = list()
 posterior_classifier: List[DefaultDict[str, DefaultDict[str, int]]] = list()
 posterior_class_prob: Dict[str, float] = dict()
-
 
 
 #===================================================================================
@@ -94,20 +94,21 @@ def construct_data_table(file: str) -> None:
 
     return None
 
+
 # FINALISED
-def process_table(unsplit_table: List[List[str]]) -> None: 
+def process_table(unsplit_table: List[List[str]]) -> None:
     """
     Obtains the number of instances, classes, classes_list, and training data
     Splits the raw data taken as a param into training (data_table) and test (test_data)
     :param unsplit_table: 2d list of original but shuffled file read from the csv file
     """
-    
+
     # Get the number of total instances in unsplit_table
     global num_instances
     num_instances = len(unsplit_table)
 
     # Calculate the number of instances for the training instances
-    global num_training_instances 
+    global num_training_instances
     num_training_instances = round(FRACTION * num_instances)
 
     # Loop through the unsplit table and split them into training and test
@@ -140,6 +141,7 @@ construct_data_table(file)
 # Training
 
 # Generation of random probabilitiy distributions ---------
+
 
 # FINALISED
 def generate_class_prob(classes: int) -> List[float]:
@@ -182,13 +184,13 @@ def fill_classifier() -> None:
 
     # Indicate that the loop has began and the classifier needs to be initialised
     first_run: bool = True
-    
+
     i: int = 0
 
     # Look through every instance in data_table (training) and pass in index of row too
     for instance in data_table:
         if first_run:
-            # Initialise Classifier 
+            # Initialise Classifier
             init_classifier(len(instance))
             first_run = False
 
@@ -208,9 +210,9 @@ def fill_row(row: List[str], row_index: int) -> None:
     :param row_index: Corresponding row index used to index probabilities in class_prob_matrix
     """
 
-    # Since there are probabilities of all classes in each 
+    # Since there are probabilities of all classes in each
     # Loop through number of classes and increment the one for the respective row
-    global total_class_probs 
+    global total_class_probs
     for i in range(len(classes_list)):
         # Increment the probability of the current class
         total_class_probs[(classes_list[i])] = class_prob_matrix[row_index][i]
@@ -221,11 +223,12 @@ def fill_row(row: List[str], row_index: int) -> None:
 
         # Each instance/row in data_table has multiple classes probabilities
         for j in range(len(classes_list)):
-            # For each attribute in a row, find respective cell 
+            # For each attribute in a row, find respective cell
             # for attribute, given class and attribute given class and increment it
-            incr_cell(attr_index, classes_list[j], row[attr_index], row_index, j)
+            incr_cell(attr_index, classes_list[j],
+                      row[attr_index], row_index, j)
 
-    return None 
+    return None
 
 
 # FINALISED
@@ -241,10 +244,8 @@ def incr_cell(attr_list_index: int, curr_class: str, attr: str, row_index: int, 
     # Don't increment anything if it's an empty cell
     if attr == EMPTY_CELL:
         return
-    global classifier 
+    global classifier
     classifier[attr_list_index][curr_class][attr] += class_prob_matrix[row_index][class_num]
-
-
 
 
 # FINALISED
@@ -252,12 +253,13 @@ def init_classifier(columns: int) -> None:
     """
     Initialises the classifier structures.
     :param columns: Number of columns in the data_table including the class column
-    """ 
+    """
     # Loop through each column for attributes, ignoring the last one since its the class.
     for i in range(columns - 1):
         new_dict()
 
-    return None 
+    return None
+
 
 # FINALISED
 def new_dict() -> None:
@@ -268,9 +270,11 @@ def new_dict() -> None:
     # Appends a newly initialised dict into the classifier structure
     classifier.append(defaultdict(lambda: defaultdict(default_prob())))
     # Appends a newly initialised dict into the posterior classifier structure
-    posterior_classifier.append(defaultdict(lambda: defaultdict(default_prob())))
+    posterior_classifier.append(defaultdict(
+        lambda: defaultdict(default_prob())))
 
     return None
+
 
 # FINALISED
 def default_prob() -> Callable[[], float]:
@@ -285,7 +289,7 @@ def default_prob() -> Callable[[], float]:
 # Constructing the posterior probabilities ----------------
 
 # FINALISED
-def create_posteriors() ->  None:
+def create_posteriors() -> None:
     """
     Create the classifier structure for posterior probability values
     """
@@ -298,6 +302,8 @@ def create_posteriors() ->  None:
     build_pclassifier()
 
     return None
+
+
 
 # FINALISED
 def class_over_data(curr_class: str) -> None:
@@ -314,13 +320,14 @@ def class_over_data(curr_class: str) -> None:
 
     return None
 
+
 # FINALISED
 def build_pclassifier() -> None:
     """
     Determines every posterior probability.
     """
 
-    # Loop through every cell value (probability) of the classifier 
+    # Loop through every cell value (probability) of the classifier
     # Send it to a append_posterior to calculate and add the posterior probability
     # Attribute layer
     for i in range(len(classifier)):
@@ -329,9 +336,10 @@ def build_pclassifier() -> None:
             # Attribute by string key value Layer
             # Calculate the posterior of each class probability within this layer
             for key, val in classifier[i][curr_class].items():
-                    append_posterior(i, curr_class, key, val)
+                append_posterior(i, curr_class, key, val)
 
     return None
+
 
 # FINALISED
 def append_posterior(attr_list_index: int, curr_class: str, attr_key: str, attr_val: float) -> None:
@@ -348,7 +356,7 @@ def append_posterior(attr_list_index: int, curr_class: str, attr_key: str, attr_
 
     # Assigning the calculated value to global struct posterior_classifier
     global posterior_classifier
-    posterior_classifier[attr_list_index][curr_class][attr_key] = attr_val / total_in_class 
+    posterior_classifier[attr_list_index][curr_class][attr_key] = attr_val / total_in_class
 
     return None
 
@@ -357,10 +365,11 @@ def append_posterior(attr_list_index: int, curr_class: str, attr_key: str, attr_
 
 # FINALISED
 def train() -> None:
-    
+
     # Create the initial class_prob_matrix based on data_table
     global class_prob_matrix
-    class_prob_matrix = gen_class_prob_matrix(num_training_instances, num_class)
+    class_prob_matrix = gen_class_prob_matrix(
+        num_training_instances, num_class)
 
     # Fill the classifier with probabilities
     fill_classifier()
@@ -370,6 +379,7 @@ def train() -> None:
 
     return None
 
+
 # Train Data
 train()
 
@@ -377,6 +387,8 @@ train()
 # Prediction
 
 # FINALISED
+
+
 def normalise(ls: List[float]) -> List[float]:
     """
     Function to normalise the produced class predictions per instance
@@ -384,7 +396,7 @@ def normalise(ls: List[float]) -> List[float]:
     :returnd: List of the probability floats normalised to add to 1
     """
 
-    return [(float(i) + EPSILON)/ sum(ls) for i in ls]
+    return [(float(i) + EPSILON) / sum(ls) for i in ls]
 
 
 # FINALISED
@@ -404,22 +416,23 @@ def predict(instance: List[str]) -> str:
     :param instance: An instance in the test_data (a row)
     :return: String containing predicted class for this instance
     """
-    # if the instance has the class still there, slice it off 
+    # if the instance has the class still there, slice it off
     # for the sake of making a prediction
     # n being the number of column, not attributes.
-    n_columns: int = len(posterior_classifier) 
+    n_columns: int = len(posterior_classifier)
     if len(instance) == n_columns:
         instance = instance[:CLASS_CELL]
 
     # Obtaining a list of classes
-    classes: List[str] = list(posterior_class_prob.keys())
-    # Find list of probabilities that this instance could be 
+    classes:
+        List[str] = list(posterior_class_prob.keys())
+    # Find list of probabilities that this instance could be
     probs: List[float] = [prob_of_class(curr_class, instance) for curr_class in classes]
 
     # Normalising the probabilities for this instance so it all adds to 1
-    probs = normalise(probs)
+    #probs = normalise(probs)
 
-    # Find the index of the highest class probability of what this instance could be 
+    # Find the index of the highest class probability of what this instance could be
     max_index: int = probs.index(max(probs))
     return classes[max_index]
 
@@ -432,7 +445,8 @@ def prob_of_class(curr_class: str, instance: List[str]) -> float:
     :param instance: Instance of the test_data (a row)
     """
     # Finding the probably of the class over all instances over the training data
-    class_prob: float = posterior_class_prob[curr_class]
+    class_prob:
+        float = posterior_class_prob[curr_class]
 
     # Applying formula to find the probability for each using reducing/folding
     prob: float = reduce(lambda x, y: x * prob_or_default(*y, curr_class),
@@ -440,9 +454,10 @@ def prob_of_class(curr_class: str, instance: List[str]) -> float:
     # Return calculated probability given that it belongs to this class
     return class_prob * prob
 
+
 # FINALISED
-def prob_or_default(attr_prob: DefaultDict[str, DefaultDict[str, float]], attr_val: str, 
-                     curr_class: str) -> float:
+def prob_or_default(attr_prob: DefaultDict[str, DefaultDict[str, float]], attr_val: str,
+                    curr_class: str) -> float:
     """
     Determines the probability of a value given a class and column.
     If the value is empty, then returns the highest value given those conditions.
@@ -455,7 +470,7 @@ def prob_or_default(attr_prob: DefaultDict[str, DefaultDict[str, float]], attr_v
 
 
 # Prediction Iterations
-# UNFINISHED
+# FINISHED
 def iterate_predictions() -> List[Tuple[str, List[str]]]:
     predictions: List[Tuple[str, List[str]]] = list()
 
@@ -465,7 +480,7 @@ def iterate_predictions() -> List[Tuple[str, List[str]]]:
         for pd in temp_pd:
             predictions.append(pd)
 
-    return predictions 
+    return predictions
 
 
 #===================================================================================
@@ -483,6 +498,7 @@ def evaluate(instances: List[List[str]]) -> float:
     return 100 * (len(list(filter(lambda x: _correct_prediction(x),
                                   predictions))) / len(predictions))
 
+
 def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:
     """
     :param instance: The instance to check whether the prediction was correct. The first cell
@@ -493,6 +509,8 @@ def _correct_prediction(instance: Tuple[str, List[str]]) -> bool:
 # -------------------------------------------------------------
 
 # Iterate Evaluation
+
+
 def iterate_evaluate(test_data: List[List[str]]) -> float:
     scores = []
     for i in range(MAX_ITERATE):
@@ -500,10 +518,10 @@ def iterate_evaluate(test_data: List[List[str]]) -> float:
     return sum(scores)/len(scores)
 
 #===================================================================================
-# Debug/ Print Calls/ Misc Function
+# Misc Function
 
 
-# Deterministic 
+# Deterministic
 def deterministic() -> List[str]:
     """
     Deterministically generate a concrete class randomly 
@@ -526,24 +544,22 @@ def append_to_one(diff: float) -> None:
     to_one_ls.append(diff)
     return None
 
-# Pre-processed table
-#print(test_data)
+#===================================================================================
+# Debug/ Print Calls
 
-# Classifier
+# Pre-processed table ------------------------
+# print(test_data)
+
+# Classifier ---------------------------------
 #print(num_instances, num_training_instances, num_class)
-#print(class_prob_matrix)
+# print(class_prob_matrix)
+# print(posterior_classifier)
+# print(total_class_probs)
 
 
-#print(posterior_classifier)
+# Predicting ---------------------------------
+print(predict_set(test_data))
 
-#print(total_class_probs)
-
-
-# Predicting
-#print(predict_set(test_data))
-
-# Evaluating
-#print(evaluate(iterate_predictions()))
-#print(iterate_evaluate(test_data))
-
-print(normalise([0.15+EPSILON, 0.15+EPSILON,0.3+EPSILON]))
+# Evaluating ---------------------------------
+print(evaluate(iterate_predictions()))
+# print(iterate_evaluate(test_data))
